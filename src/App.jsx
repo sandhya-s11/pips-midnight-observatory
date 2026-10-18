@@ -1,175 +1,93 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 
-const dreams = [
-  { id: 'cloud', label: 'Cloud Garden', message: 'Tonight, a soft cloud carries you over a garden that only blooms in moonlight.' },
-  { id: 'moon', label: 'Moon Pond', message: 'A silver boat is waiting on the Moon Pond. The water remembers every wish.' },
-  { id: 'rooftop', label: 'Rooftop Kites', message: 'A little kite made of starlight is ready to dance above the rooftops with you.' },
+const notes = [261.63, 293.66, 329.63, 349.23, 392, 440, 493.88]
+const stops = [
+  ['Bakery rooftop', 'A dream that smells like warm bread.'],
+  ['Moon pond', 'A silver boat remembers your wish.'],
+  ['Cloud garden', 'Every flower hums a sleepy secret.'],
+  ['Old clocktower', 'Time slows down for soft sleepers.'],
+  ['Nursery window', 'A tiny star is waiting inside.'],
+]
+const scenes = [
+  ['01', 'A sleepy star falls', 'It tumbled softly onto a cloud.'],
+  ['02', 'Pip wakes giggling', 'The smallest light made a very big hello.'],
+  ['03', 'Some ghosts need help', 'So Pip listened until the quiet felt friendly.'],
+  ['04', 'A first nightlight', 'Warm glow, tiny switch, zero scary corners.'],
+  ['05', 'Doors open at midnight', 'The nursery welcomed every wandering dream.'],
+  ['06', 'Your invitation', 'What will you dream tonight?'],
 ]
 
+function safeRead(key, fallback) {
+  try { return window.localStorage.getItem(key) || fallback } catch { return fallback }
+}
+
 function App() {
-  const [nightMode, setNightMode] = useState(() => window.localStorage.getItem('pip-theme') !== 'day')
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [night, setNight] = useState(() => safeRead('pip-theme', 'night') === 'night')
+  const [sound, setSound] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [status, setStatus] = useState('Pip is dreaming…')
   const [playing, setPlaying] = useState(false)
-  const [muted, setMuted] = useState(false)
-  const [glow, setGlow] = useState(false)
-  const [dream, setDream] = useState(null)
-  const [secret, setSecret] = useState(false)
-  const [sparkles, setSparkles] = useState(false)
-  const [mood, setMood] = useState('Sleepy')
-  const [pipMessage, setPipMessage] = useState('A little sleepy, a little curious, and very glad you’re here.')
-  const [delivered, setDelivered] = useState(0)
-  const [chaos, setChaos] = useState(false)
-  const audioRef = useRef(null)
-  const timersRef = useRef([])
-  const heroArtRef = useRef(null)
+  const [lamps, setLamps] = useState([false, false, false, false])
+  const [selectedStop, setSelectedStop] = useState(null)
+  const [wishes, setWishes] = useState(() => { try { return JSON.parse(window.localStorage.getItem('pip-wishes') || '[]') } catch { return [] } })
+  const [wish, setWish] = useState('')
+  const [delivered, setDelivered] = useState(1204)
+  const [awake, setAwake] = useState(true)
+  const [toast, setToast] = useState('')
+  const audio = useRef(null)
+  const pipTaps = useRef(0)
 
-  useEffect(() => { window.localStorage.setItem('pip-theme', nightMode ? 'night' : 'day') }, [nightMode])
+  useEffect(() => { const timer = setTimeout(() => setLoading(false), 1450); return () => clearTimeout(timer) }, [])
+  useEffect(() => { try { window.localStorage.setItem('pip-theme', night ? 'night' : 'day') } catch { /* storage may be unavailable */ } }, [night])
+  useEffect(() => { const id = setInterval(() => setStatus((current) => current === 'Pip is dreaming…' ? 'Pip is tinkering…' : current === 'Pip is tinkering…' ? 'Pip is giggling…' : 'Pip is dreaming…'), 2800); return () => clearInterval(id) }, [])
+  useEffect(() => { const id = setTimeout(() => setAwake(false), 20000); return () => clearTimeout(id) }, [])
+  useEffect(() => () => audio.current?.close(), [])
 
-  useEffect(() => () => {
-    timersRef.current.forEach(clearTimeout)
-    if (audioRef.current) audioRef.current.close()
-  }, [])
+  const welcome = useMemo(() => safeRead('pip-seen', '') ? 'Welcome back, sleepy friend!' : 'Hello, new dreamer!', [])
+  useEffect(() => { try { window.localStorage.setItem('pip-seen', 'yes') } catch { /* storage may be unavailable */ } }, [])
 
-  useEffect(() => {
-    const scenes = [...document.querySelectorAll('.story-scene')]
-    if (!('IntersectionObserver' in window)) return
-    scenes.forEach((scene) => scene.classList.add('reveal-ready'))
-    const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-visible')
-        observer.unobserve(entry.target)
-      }
-    }), { threshold: 0.18 })
-    scenes.forEach((scene) => observer.observe(scene))
-    return () => observer.disconnect()
-  }, [])
-
-  const playLullaby = async () => {
-    if (playing) {
-      timersRef.current.forEach(clearTimeout)
-      timersRef.current = []
-      if (audioRef.current) { await audioRef.current.close(); audioRef.current = null }
-      setPlaying(false)
-      return
-    }
+  const chime = (frequency = 440) => {
+    if (!sound) return
     const AudioContextClass = window.AudioContext || window.webkitAudioContext
     if (!AudioContextClass) return
-    const context = new AudioContextClass()
-    audioRef.current = context
-    await context.resume()
-    const master = context.createGain()
-    master.gain.value = muted ? 0 : 0.16
-    context._pipMaster = master
-    master.connect(context.destination)
-    const notes = [523.25, 659.25, 783.99, 659.25, 587.33, 523.25]
-    setPlaying(true)
-    notes.forEach((frequency, index) => {
-      const timer = setTimeout(() => {
-        if (context.state === 'closed') return
-        const oscillator = context.createOscillator()
-        const envelope = context.createGain()
-        oscillator.type = 'sine'
-        oscillator.frequency.value = frequency
-        envelope.gain.setValueAtTime(0.0001, context.currentTime)
-        envelope.gain.exponentialRampToValueAtTime(0.22, context.currentTime + 0.04)
-        envelope.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.65)
-        oscillator.connect(envelope); envelope.connect(master)
-        oscillator.start(); oscillator.stop(context.currentTime + 0.7)
-      }, index * 460)
-      timersRef.current.push(timer)
-    })
-    timersRef.current.push(setTimeout(async () => {
-      if (audioRef.current === context) { await context.close(); audioRef.current = null; setPlaying(false) }
-    }, notes.length * 460 + 800))
+    const context = audio.current || new AudioContextClass()
+    audio.current = context
+    const oscillator = context.createOscillator(); const gain = context.createGain()
+    oscillator.type = 'sine'; oscillator.frequency.value = frequency * (night ? 1 : 1.12)
+    gain.gain.setValueAtTime(.0001, context.currentTime); gain.gain.exponentialRampToValueAtTime(.16, context.currentTime + .03); gain.gain.exponentialRampToValueAtTime(.0001, context.currentTime + .55)
+    oscillator.connect(gain).connect(context.destination); oscillator.start(); oscillator.stop(context.currentTime + .6)
   }
-
-  const toggleMute = () => {
-    setMuted((current) => {
-      const next = !current
-      if (audioRef.current?.state === 'running') {
-        // The master gain is attached to the context so the control is also effective mid-song.
-        audioRef.current._pipMaster?.gain.setTargetAtTime(next ? 0 : 0.16, audioRef.current.currentTime, 0.03)
-      }
-      return next
-    })
+  const playLullaby = () => {
+    if (!sound) { setToast('Turn sound on for Pip’s tiny lullaby.'); return }
+    if (playing) { setPlaying(false); return }
+    setPlaying(true); notes.forEach((note, index) => setTimeout(() => chime(note), index * 400)); setTimeout(() => setPlaying(false), notes.length * 400 + 400)
   }
+  const tapPip = () => { pipTaps.current += 1; chime(660); if (pipTaps.current >= 5) { setToast('You woke Pip!'); setStatus('Pip woke up giggling!'); pipTaps.current = 0 } }
+  const submitWish = (event) => { event.preventDefault(); const clean = wish.trim().replace(/[<>]/g, '').slice(0, 80); if (!clean) return; const next = [clean, ...wishes].slice(0, 8); setWishes(next); setWish(''); setDelivered((value) => value + 1); try { window.localStorage.setItem('pip-wishes', JSON.stringify(next)) } catch { /* storage may be unavailable */ } }
+  const toggleLamp = (index) => { setLamps((current) => current.map((lamp, i) => i === index ? !lamp : lamp)); chime([392, 440, 523, 659][index]) }
 
-  const discoverSecret = () => {
-    setSecret(true); setSparkles(true)
-    const timer = setTimeout(() => setSparkles(false), 1500)
-    timersRef.current.push(timer)
-  }
+  return <main className={`observatory ${night ? 'night' : 'day'} ${lamps.some(Boolean) ? 'lamps-on' : ''}`} onPointerMove={() => setAwake(true)}>
+    {loading && <div className="loading-screen"><div className="loading-lamp">☾</div><p>Pip is turning on the nightlight…</p></div>}
+    <div className="grain" aria-hidden="true" />
+    <div className="progress" aria-hidden="true" />
+    <header className="topbar"><a className="brand" href="#home">Pip <span>✦</span></a><nav><a href="#about">About</a><a href="#projects">Projects</a><a href="#story">Story</a></nav><div className="controls"><button onClick={() => setSound(!sound)} aria-pressed={sound}>{sound ? 'Sound on ♫' : 'Sound off ◌'}</button><button onClick={() => setNight(!night)} aria-label="Toggle day and night mode">{night ? '☼ Day' : '☾ Night'}</button></div></header>
 
-  const reactToPip = () => {
-    const messages = ['Pip says: “Did you hear that? I think the stars are giggling.”', 'Pip says: “I made you a dream. It has a very small boat.”', 'Pip says: “Oh! You found me. I was just counting clouds.”']
-    setPipMessage(messages[Math.floor(Math.random() * messages.length)])
-    setDelivered((count) => count + 1)
-  }
+    <section className="hero" id="home"><div className="stars" aria-hidden="true">✦ · ✧ · ★ · ✦ · ✧ · ★</div><div className="hero-moon" onClick={() => { chime(540); setToast('The moon winks back.') }} aria-label="Winking moon">☾</div><div className="hero-copy"><p className="mono">{welcome} · {night ? 'still awake?' : 'good morning!'}</p><h1>Hello, I&apos;m <em>Pip.</em></h1><p className="tagline">I build the dreams you fall asleep inside.</p><p className="hero-text">I&apos;m a Junior Dream Engineer at the Midnight Nursery. I make lullabies, nightlights, and tiny bedtime stories for curious little sleepers.</p><div className="hero-actions"><a className="button primary" href="#projects">Follow the stars ↓</a><a className="button ghost" href="#about">Meet Pip ↗</a></div><div className="status"><i /> {status}</div></div><div className={`hero-art ${awake ? '' : 'asleep'}`} onClick={tapPip}><div className="orbit-label">JUNIOR DREAM ENGINEER ✦ MIDNIGHT NURSERY ✦</div><img src="/images/pip_avatar_cloud.jpg" alt="Pip waving on a cloud in a starry nightcap"/><span className="sticker sticker-one">little dream<br/>builder</span><span className="sticker sticker-two">tap me ✦</span>{!awake && <b className="zzz">z z z</b>}</div><div className="cloud cloud-a" aria-hidden="true">☁</div><div className="cloud cloud-b" aria-hidden="true">☁</div></section>
 
-  const movePip = (event) => {
-    if (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const bounds = event.currentTarget.getBoundingClientRect()
-    const x = (event.clientX - bounds.left) / bounds.width - 0.5
-    const y = (event.clientY - bounds.top) / bounds.height - 0.5
-    if (heroArtRef.current) heroArtRef.current.style.transform = `translate(${x * 8}px, ${y * 7}px) rotate(${x * 2}deg)`
-  }
+    <section className="section about" id="about"><p className="mono">THE NURSERY NOTEBOOK · NO. 001</p><div className="about-grid"><div className="portrait-frame"><img src="/images/pip_portrait.jpg" alt="Pip holding a lantern and a tiny unicorn music box"/><span className="spin-badge">PIP ★ PIP ★</span></div><div><p className="mono">A LITTLE INTRODUCTION</p><h2>Meet our <em>dreamer.</em></h2><p className="lead">Pip is curious, sleepy, a little clumsy, and easily delighted. Pip hates silence, so every night gets a song.</p><div className="traits"><span>✦ Sleepy but inventing</span><span>♡ Hates silence</span><span>☾ On night shift</span></div><div className="sheet"><div><b>IS</b><span>A baby dream engineer</span></div><div><b>DOES</b><span>Designs soft landings</span></div><div><b>LIVES</b><span>At the Midnight Nursery</span></div></div></div></div></section>
 
-  const resetPip = () => { if (heroArtRef.current) heroArtRef.current.style.transform = '' }
+    <section className="section projects" id="projects"><div className="section-heading"><div><p className="mono">OPEN LATE EVERY NIGHT · THREE LITTLE PROJECTS</p><h2>The Dream <em>Workshop</em></h2></div><p>Small comforts for the hours when the world goes quiet.</p></div><article className="project-card lavender"><div className="project-image"><img src="/images/pip_lullaby_box.jpg" alt="Pip's pastel unicorn music box"/></div><div className="project-copy"><p className="mono">01 · THE LULLABY LAB</p><h3>A softer sort of <em>night song.</em></h3><p>Pip winds the music box and sends warm notes into the nursery.</p><div className="keys">{notes.map((note, index) => <button key={note} onClick={() => chime(note)} aria-label={`Play note ${index + 1}`}><span>{['do','re','mi','fa','sol','la','ti'][index]}</span></button>)}</div><button className="button primary" onClick={playLullaby}>{playing ? 'Stop the lullaby' : 'Play a tiny lullaby ♫'}</button></div></article><article className="project-card dark-card"><div className="project-copy"><p className="mono">02 · THE NIGHTLIGHT COLLECTION</p><h3>One small light changes <em>everything.</em></h3><p>Tap a lamp to warm up the corners of the night. The sleepy doodles are hiding nearby.</p><div className="lamps">{['☾','★','☁','♡'].map((lamp, index) => <button key={lamp} className={lamps[index] ? 'lit' : ''} onClick={() => toggleLamp(index)} aria-label={`Toggle ${lamp} lamp`}>{lamp}</button>)}</div></div><img className="lantern" src="/images/pip_dream_lantern.jpg" alt="Pip's glowing moon dream lantern"/></article><article className="project-card route-card"><div className="route-copy"><p className="mono">03 · DREAM DELIVERY ROUTES</p><h3>Every dream finds its <em>way home.</em></h3><p>Choose a star destination. Pip will send a tiny dream along the constellation path.</p><div className="dream-note" aria-live="polite">{selectedStop ? <><b>{stops[selectedStop][0]}</b><span>{stops[selectedStop][1]}</span></> : 'Select a star on the map ↗'}</div></div><div className="map"><svg viewBox="0 0 500 250" aria-hidden="true"><path d="M28 210 C100 100 150 220 230 125 S370 40 465 70"/><path d="M28 210 C100 100 150 220 230 125 S370 40 465 70" className="dash"/></svg>{stops.map((stop, index) => <button key={stop[0]} style={{left: `${8 + index * 20}%`, top: `${72 - (index % 3) * 23}%`}} onClick={() => { setSelectedStop(index); setDelivered((value) => value + 1); chime(500 + index * 40) }} aria-label={`Deliver dream to ${stop[0]}`} className={selectedStop === index ? 'selected' : ''}>✦<small>{stop[0]}</small></button>)}</div></article></section>
 
-  return (
-    <main className={`observatory ${nightMode ? 'night' : 'day'} ${mood.toLowerCase()} ${chaos ? 'chaos' : ''}`}>
-      <header className="navbar">
-        <a className="brand" href="#home" aria-label="Pip's Observatory home"><img src="/images/pip_avatar_cloud.jpg" alt="" /> <span>Pip's <i>Midnight Observatory</i></span></a>
-        <button className="menu-toggle" aria-expanded={menuOpen} aria-controls="primary-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? 'Close' : 'Menu'} <span aria-hidden="true">☰</span></button>
-        <nav id="primary-navigation" className={`nav-links ${menuOpen ? 'open' : ''}`} aria-label="Main navigation">
-          <a onClick={() => setMenuOpen(false)} href="#about">About Pip</a><a onClick={() => setMenuOpen(false)} href="#workshop">Dream Workshop</a><a onClick={() => setMenuOpen(false)} href="#story">Origin Story</a>
-        </nav>
-        <div className="nav-controls">
-          <button className="chaos-toggle" onClick={() => setChaos(!chaos)} aria-pressed={chaos}>{chaos ? 'Calm stars' : 'Star dance'}</button>
-          <button className="sound-toggle" onClick={toggleMute} aria-pressed={muted} aria-label={muted ? 'Unmute lullaby' : 'Mute lullaby'}>{muted ? 'Sound off' : 'Sound on'} <span aria-hidden="true">{muted ? '◌' : '♫'}</span></button>
-          <button className="theme-toggle" onClick={() => setNightMode(!nightMode)} aria-label={`Switch to ${nightMode ? 'day' : 'night'} mode`} aria-pressed={!nightMode}>{nightMode ? '☼ Day' : '☾ Night'}</button>
-        </div>
-      </header>
+    <section className="story section" id="story"><p className="mono">FILED UNDER: HOW IT BEGAN · SIX SCENES</p><h2>A little <em>origin story.</em></h2><div className="story-line" /> <div className="scenes">{scenes.map(([number, title, caption], index) => <article className={`scene scene-${index + 1}`} key={number}><span className="scene-number">{number}</span><div className="scene-art">{['✦','☻','◌','☼','✧','☾'][index]}</div><div><p className="mono">PIP SAYS</p><h3>{title}</h3><p>{caption}</p></div></article>)}</div><p className="story-end">What will you dream tonight? <em>✦</em></p></section>
 
-      <section className="hero" id="home">
-        <div className="sky-stars" aria-hidden="true" />
-        <span className="hero-moon" aria-hidden="true" />
-        <span className="lantern-orbit" aria-hidden="true">✧</span>
-        <div className="hero-copy">
-          <p className="eyebrow">Junior Dream Engineer <b>·</b> Midnight Nursery</p>
-          <h1>I build the dreams<br />you fall asleep <em>inside.</em></h1>
-          <p className="hero-description">Hello, night visitor. I’m Pip — a little sleepy, a little curious, and very glad you’re here. Come see where the dreams are made.</p>
-          <div className="hero-actions"><a className="primary-button" href="#workshop">Enter the Dream World <span>↓</span></a><a className="text-link" href="#about">Meet Pip <span>↗</span></a></div>
-          <p className="hero-note"><span className="live-dot" /> Currently awake past bedtime ✦</p>
-        </div>
-        <div className="hero-art" onPointerMove={movePip} onPointerLeave={resetPip}><div className="art-halo" /><img ref={heroArtRef} src="/images/pip_avatar_cloud.jpg" alt="Pip nestled in a little cloud, wearing a starry nightcap" /><span className="art-caption">little keeper of the in-between</span><span className="annotation annotation-log">DREAM LOG · 001</span><span className="annotation annotation-sleep">SLEEP LEVEL · 2%</span></div>
-        <div className="cloud cloud-left" aria-hidden="true">☁</div><div className="cloud cloud-right" aria-hidden="true">☁</div>
-        <a className="hidden-star" href="#secret-note" aria-label="A tiny hidden star — discover Pip's secret note" onClick={(event) => { event.preventDefault(); discoverSecret() }}>✦</a>
-      </section>
+    <section className="growth section"><p className="mono">THE GROWTH CHART · NIGHT SHIFT SKILLS</p><div className="growth-grid"><div><h2>Growing into <em>the job.</em></h2><p>Every little skill gets taller when someone needs a softer night.</p></div><div className="chart">{['Dream design','Lullabies','Nightlights','Storytelling','Giggling'].map((skill, index) => <div className="bar" key={skill}><span style={{height: `${52 + index * 8}%`}}><b>{index + 3}</b></span><label>{skill}</label></div>)}</div></div></section>
 
-      <section className="about section" id="about">
-        <div className="section-kicker">THE NURSERY NOTEBOOK <span>NO. 001</span></div>
-        <div className="profile-layout">
-          <button className="profile-image" onClick={reactToPip} aria-label="Say hello to Pip"><img src="/images/pip_portrait.jpg" alt="Pip, a cute skull-faced baby in a starry nightcap with a little bow" /><span className="image-stamp">PIP<br />★</span><span className="profile-hint">TAP TO SAY HELLO</span></button>
-          <div className="profile-copy"><p className="eyebrow">A LITTLE INTRODUCTION</p><h2>Meet our <em>dreamer.</em></h2><p className="profile-lead">Pip is a Junior Dream Engineer at the Midnight Nursery: curious, cozy, and just a bit clumsy.</p><p>A smooth round skull, two tiny lights for eyes, a crooked smile, and a nightcap with a pink bow. Pip’s favorite thing is making dreams for little creatures — usually while giggling at absolutely nothing.</p><p className="pip-message" aria-live="polite">{pipMessage}</p><div className="profile-tags"><span>✦ Sleepy, but inventing</span><span>♡ Hates silence</span><span>☾ On night shift</span></div><div className="mood-switch" role="group" aria-label="Pip's mood"><span>PIP'S MOOD</span><button aria-pressed={mood === 'Sleepy'} onClick={() => setMood('Sleepy')}>Sleepy</button><button aria-pressed={mood === 'Curious'} onClick={() => setMood('Curious')}>Curious</button></div></div>
-        </div>
-      </section>
+    <section className="guestbook section"><div className="guest-copy"><p className="mono">THE DREAM GUESTBOOK · 00{Math.min(wishes.length + 1, 9)}</p><h2>Leave a dream wish for <em>Pip.</em></h2><p>Write something tiny for the nursery wall. Pip reads every note at bedtime.</p><form onSubmit={submitWish}><input value={wish} onChange={(event) => setWish(event.target.value)} maxLength="80" placeholder="I wish for…" aria-label="Your dream wish"/><button className="button primary">Pin it ✦</button></form></div><div className="wish-wall">{wishes.length ? wishes.map((item, index) => <div className={`wish wish-${index % 4}`} key={`${item}-${index}`}>{item}</div>) : <><div className="wish wish-0">A pocket full of stars</div><div className="wish wish-1">A nap with the moon</div><div className="wish wish-2">No more scary quiet</div></>}<div className="odometer"><strong>{delivered.toString().padStart(5, '0')}</strong><span>dreams delivered</span></div></div></section>
 
-      <section className="workshop section" id="workshop">
-        <div className="section-kicker">OPEN LATE EVERY NIGHT <span>THREE LITTLE PROJECTS</span></div>
-        <div className="section-heading"><div><p className="eyebrow">MADE AFTER MOONRISE</p><h2>The Dream <em>Workshop</em></h2></div><p>Small comforts for the hours when the world goes quiet.</p></div>
-        <article className="project lullaby-project"><div className="project-image"><img src="/images/pip_lullaby_box.jpg" alt="Pip's music box for making gentle lullabies" /><span className="image-label">01 / SOUND STUDY</span></div><div className="project-copy"><p className="eyebrow">THE LULLABY LAB</p><h3>A softer sort<br />of <em>night song.</em></h3><p>Pip winds the little music box and sends a handful of warm notes out into the nursery.</p><button className="project-button" onClick={() => { setDelivered((count) => count + 1); playLullaby() }} aria-pressed={playing}>{playing ? 'Stop the lullaby' : 'Play a tiny lullaby'} <span>{playing ? 'Ⅱ' : '♫'}</span></button><span className="interaction-hint">A short melody, made with Web Audio. No autoplay.</span></div></article>
-        <article className={`project lantern-project ${glow ? 'glowing' : ''}`}><div className="project-copy"><p className="eyebrow">THE NIGHTLIGHT COLLECTION</p><h3>One small light<br />changes <em>everything.</em></h3><p>For the corners of a room that feel a little too quiet. Tap the lantern to warm up the whole night.</p><button className="project-button" onClick={() => { setGlow(!glow); setDelivered((count) => count + 1) }} aria-pressed={glow}>{glow ? 'Dim the lantern' : 'Light the lantern'} <span>{glow ? '☼' : '✧'}</span></button></div><button className="lantern-image" onClick={() => { setGlow(!glow); setDelivered((count) => count + 1) }} aria-label={glow ? 'Turn the lantern glow off' : 'Turn the lantern glow on'} aria-pressed={glow}><img src="/images/pip_dream_lantern.jpg" alt="A glowing dream lantern from Pip’s collection" /><span className="image-label">02 / LIGHT STUDY</span></button></article>
-        <article className="project routes-project"><div className="route-intro"><p className="eyebrow">DREAM DELIVERY ROUTES</p><h3>Every dream<br />finds its <em>way home.</em></h3><p>Choose a star destination. Pip will send a tiny dream along the constellation path.</p><div className="dream-message" aria-live="polite">{dream ? <><span>TONIGHT'S DELIVERY</span><p>{dream.message}</p></> : <span className="message-placeholder">Select a star on the map ↗</span>}</div></div><div className="map-wrap"><svg className={`constellation ${dream ? `route-${dream.id}` : ''}`} viewBox="0 0 560 330" role="img" aria-label="A constellation map showing three dream delivery destinations connected by a glowing route"><path className="route-base" d="M64 246 C140 214 126 122 222 147 S310 241 366 166 S458 95 507 63"/><path className="route-dash" d="M64 246 C140 214 126 122 222 147 S310 241 366 166 S458 95 507 63"/><circle className="travel-star" r="8"><animateMotion dur="5s" repeatCount="indefinite" path="M64 246 C140 214 126 122 222 147 S310 241 366 166 S458 95 507 63" /></circle><g className="map-destination"><circle cx="222" cy="147" r="26"/><text x="222" y="153">✦</text></g></svg>{dreams.map((item) => <button key={item.id} className={`map-star star-${item.id}`} onClick={() => { setDream(item); setDelivered((count) => count + 1) }} aria-label={`Send a dream to ${item.label}`} aria-pressed={dream?.id === item.id}><span>✦</span><small>{item.label}</small></button>)}<span className="map-label">NURSERY SKY · 03:17 AM</span></div></article>
-      </section>
-
-      <section className="story section" id="story"><div className="section-kicker">FILED UNDER: HOW IT BEGAN <span>THREE SCENES</span></div><div className="story-heading"><p className="eyebrow">BEFORE THE FIRST DREAM</p><h2>A little <em>origin story.</em></h2></div><div className="story-scenes"><article className="story-scene scene-one"><span className="scene-number">01</span><div className="scene-visual"><span className="falling-star">✦</span><span className="scene-lantern">♧</span></div><div><p className="eyebrow">THE LITTLE FALL</p><h3>A star finds shelter.</h3><p>One quiet night, a tiny fallen star tumbled into a forgotten lantern on a rooftop.</p></div></article><article className="story-scene scene-two"><span className="scene-number">02</span><div className="scene-visual"><span className="scene-note">♪</span><span className="scene-glow">✧</span></div><div><p className="eyebrow">A NEW PURPOSE</p><h3>Light, song, and a story.</h3><p>Pip discovered that the smallest comforts could make a lonely night feel safe.</p></div></article><article className="story-scene scene-three"><span className="scene-number">03</span><div className="scene-visual"><span className="scene-route">✧ · · ✦ · · ✧</span></div><div><p className="eyebrow">THE MIDNIGHT DELIVERY</p><h3>A dream engineer is born.</h3><p>Now Pip carries tiny dreams over rooftops and constellations, always home before sunrise.</p></div></article></div><div className="story-signoff">And when the nursery gets quiet... <em>Pip starts humming.</em></div></section>
-
-      <footer className="footer"><div className="footer-mark">✦</div><p className="eyebrow">PIP'S MIDNIGHT OBSERVATORY</p><h2>Sleep well, <em>little star.</em></h2><p>Made with tiny dreams and a little stardust.</p><p className="counter">{delivered.toString().padStart(3, '0')} dreams delivered <small>· playful demo counter</small></p><a className="back-top" href="#home">Back to the top ↑</a><small>Character artwork: official haX.baby Pip asset pack · Track 1</small><a className="footer-home" href="#home" aria-label="Back to top">✦</a></footer>
-      {secret && <div className="secret-note" id="secret-note" role="status"><button aria-label="Close secret note" onClick={() => setSecret(false)}>×</button><span>✧ A NOTE FROM PIP ✧</span><p>May your dreams be soft, and may one little star keep you company. Goodnight!</p>{sparkles && <div className="secret-sparkles" aria-hidden="true">✦ · ✧ · ✦</div>}</div>}
-    </main>
-  )
+    <footer><div className="footer-star">✦</div><h2>Sleep well, <em>little star.</em></h2><p>Made with tiny dreams and a little stardust.</p><div className="badges"><span>BEST VIEWED<br/>IN DREAMLAND</span><span>MADE WITH<br/>CLAUDE & LOVE</span></div><small>Pip art: official haX.baby Pip Creator Asset Pack · Fonts: Google Fonts · Sound: synthesised with Web Audio API · Libraries: React, Tailwind, GSAP, Framer Motion</small><p className="credits">haX.baby “Baby&apos;s First Website” hackathon · Track 1 · Last updated at bedtime</p></footer>
+    {toast && <button className="toast" onClick={() => setToast('')} role="status">{toast} ×</button>}
+  </main>
 }
 
 export default App
