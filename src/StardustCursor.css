@@ -3,4 +3,5 @@
 .stardust-particle.gold { color: #ffe29a; background: currentColor; }
 .stardust-particle.lilac { width: 5px; height: 5px; color: #d7c1ff; background: currentColor; animation-delay: .04s; }
 @keyframes stardust-fade { 0% { opacity: .9; transform: translate(-50%, -50%) rotate(-45deg) scale(.8); } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(45deg) scale(.1); } }
-@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) { .stardust-cursor { display: none; } }
+@media (pointer: coarse), (hover: none) { .stardust-particle { width: 5px; height: 5px; animation-duration: .48s; } .stardust-particle.lilac { width: 4px; height: 4px; } }
+@media (prefers-reduced-motion: reduce) { .stardust-cursor { display: none; } }

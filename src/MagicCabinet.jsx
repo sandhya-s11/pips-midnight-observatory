@@ -270,7 +270,7 @@ export default function MagicCabinet({ onBack, muted }) {
       <div className={`cabinet-flashlight ${drawer === 1 ? 'flashlight-active' : ''}`} style={{ '--flash-x': `${flashlight.x}%`, '--flash-y': `${flashlight.y}%` }} aria-hidden="true" />
       {drawer === 1 && starSpots.map((spot, index) => {
         const closeToLight = Math.hypot(spot.x - flashlight.x, spot.y - flashlight.y) < 19
-        return <button key={index} data-silent-click className={`cabinet-hidden-star ${foundStars.includes(index) ? 'star-found' : ''} ${flashlight.active && closeToLight ? 'star-searching' : ''}`} style={{ left: `${spot.x}%`, top: `${spot.y}%` }} onClick={(event) => findStar(index, event)} aria-label={`Find hidden star ${index + 1}${foundStars.includes(index) ? ', found' : ''}`} disabled={foundStars.includes(index)}>{foundStars.includes(index) ? '✦' : '✧'}</button>
+        return <button key={index} data-silent-click className={`cabinet-hidden-star star-${index + 1} ${foundStars.includes(index) ? 'star-found' : ''} ${flashlight.active && closeToLight ? 'star-searching' : ''}`} style={{ left: `${spot.x}%`, top: `${spot.y}%` }} onClick={(event) => findStar(index, event)} aria-label={`Find hidden star ${index + 1}${foundStars.includes(index) ? ', found' : ''}`} disabled={foundStars.includes(index)}>{foundStars.includes(index) ? '✦' : '✧'}</button>
       })}
       {sparkleBursts.map((burst) => <span key={burst.id} className="cabinet-spark-burst" style={{ left: `${burst.x}%`, top: `${burst.y}%` }} onAnimationEnd={() => setSparkleBursts((items) => items.filter((item) => item.id !== burst.id))} aria-hidden="true">✦ ✧ ✦</span>)}
       <div className="cabinet-speech" role="status" aria-live="polite"><span className="speech-pip-name">Pip</span>{pipMessage}</div>

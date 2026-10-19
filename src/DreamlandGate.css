@@ -834,3 +834,20 @@
     opacity: 0.5;
   }
 }
+
+/* Day-only palette for the gate's fixed night-colored surfaces and labels. */
+.observatory.day .dreamland-gate { color: #40364f; }
+.observatory.day .dreamland-gate-bg::after { background: linear-gradient(180deg,#fff9f055 0%,#f0eafb66 34%,#fff2e477 72%,#e7f1fcbb 100%); }
+.observatory.day .dreamland-header .dl-eyebrow, .observatory.day .dreamland-header h2, .observatory.day .dreamland-header h2 .dl-sparkle { color: #40364f; text-shadow: 0 1px 12px #fff9f0aa; }
+.observatory.day .dreamland-header .dl-subtitle { color: #625d70; text-shadow: 0 1px 10px #fff9f0; }
+.observatory.day .dl-speech-bubble, .observatory.day .dl-wish-card, .observatory.day .dl-final-message { color: #40364f; border-color: #e5dded; background: #fff9f0ed; box-shadow: 0 8px 28px #51466a22; }
+.observatory.day .dl-wish-card p, .observatory.day .dl-final-message p { color: #625d70; }
+.observatory.day .dl-wish-card .dl-wish-label, .observatory.day .dl-final-message .dl-final-label, .observatory.day .dl-final-message .dl-final-star { color: #84694f; }
+.observatory.day .dl-wish-button, .observatory.day .dl-another-wish, .observatory.day .dl-goodnight-button, .observatory.day .dl-replay-button { color: #40364f; border-color: #d8cce8; background: linear-gradient(135deg,#f8e4ed,#f0eafb); box-shadow: 0 5px 16px #51466a20; }
+.observatory.day .dreamland-marquee, .observatory.day .dreamland-footer { color: #40364f; }
+.observatory.day .dl-marquee-text, .observatory.day .dl-footer-tagline, .observatory.day .dl-footer-detail, .observatory.day .dl-footer-credits { color: #625d70; }
+.observatory.day .dl-footer-counter { border-color: #e5dded; background: linear-gradient(180deg,#fff2e4,#f0eafb); box-shadow: inset 0 0 0 3px #fff9f0,0 5px 18px #51466a20; }
+.observatory.day .dl-footer-counter small { color: #625d70; }
+.observatory.day .dreamland-footer-links a, .observatory.day .dl-back-beginning { color: #625d70; }
+.observatory.day .dreamland-footer-links a:focus-visible, .observatory.day .dl-back-beginning:focus-visible { outline-color: #766396; }
+.observatory.day .dl-curtain-left, .observatory.day .dl-curtain-right { background-color: #f0eafb; }

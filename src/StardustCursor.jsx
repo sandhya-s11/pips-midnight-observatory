@@ -7,24 +7,26 @@ export default function StardustCursor({ reducedMotion }) {
   const [sparkles, setSparkles] = useState([])
 
   useEffect(() => {
-    const pointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)')
+    const coarsePointerQuery = window.matchMedia('(pointer: coarse)')
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    if (!pointerQuery.matches || reducedMotion || motionQuery.matches) return undefined
+    if (reducedMotion || motionQuery.matches) return undefined
+
+    const maxSparkles = coarsePointerQuery.matches ? 6 : MAX_SPARKLES
+    const spawnInterval = coarsePointerQuery.matches ? 90 : 42
 
     let frame = 0
     let lastSpawn = 0
     let nextId = 0
     let point = null
     const onPointerMove = (event) => {
-      if (event.pointerType === 'touch') return
       point = { x: event.clientX, y: event.clientY }
       if (frame) return
       frame = window.requestAnimationFrame((time) => {
         frame = 0
-        if (!point || time - lastSpawn < 42) return
+        if (!point || time - lastSpawn < spawnInterval) return
         lastSpawn = time
         const sparkle = { id: nextId++, ...point, tone: nextId % 2 ? 'gold' : 'lilac' }
-        setSparkles((current) => [...current.slice(-(MAX_SPARKLES - 1)), sparkle])
+        setSparkles((current) => [...current.slice(-(maxSparkles - 1)), sparkle])
       })
     }
     window.addEventListener('pointermove', onPointerMove, { passive: true })

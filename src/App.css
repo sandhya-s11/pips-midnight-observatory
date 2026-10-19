@@ -12,9 +12,10 @@
 
 .observatory::before { position: fixed; content: ''; inset: 0; z-index: -1; pointer-events: none; opacity: .2; background-image: radial-gradient(#ffffff22 .7px, transparent .7px); background-size: 5px 5px; mix-blend-mode: screen; }
 
-.observatory.day { --ink: #382b43; --muted: #756a82; --night: #fff4e8; --deep: #f7e4df; --lilac: #9c87bd; --pink: #bf6689; --gold: #a9672e; background: var(--night); }
+.observatory.day { --ink: #40364f; --muted: #625d70; --night: #fff9f0; --deep: #f0eafb; --lilac: #766396; --pink: #995b77; --gold: #84694f; --day-cream: #fff2e4; --day-lavender: #f0eafb; --day-pink: #f8e4ed; --day-sky: #e7f1fc; --day-border: #e5dded; --day-accent: #b7a5e8; --day-pink-accent: #e8b7cb; background: var(--night); }
 
 .observatory.curious { --lilac: #c4a8e8; --pink: #f0b6d4; --gold: #ffdb8e; }
+.observatory.day.curious { --lilac: #766396; --pink: #995b77; --gold: #84694f; }
 
 
 
@@ -1420,6 +1421,7 @@ button.nightlight-mini-lantern{padding:0;border:0;background:transparent;cursor:
 @keyframes lantern-wave{0%{opacity:0;transform:scale(.48)}18%{opacity:.74}100%{opacity:0;transform:scale(1.25)}}
 @keyframes lantern-sparkle-drift{0%,100%{translate:0 0;opacity:.7}50%{translate:0 -6px;opacity:1}}
 @media(max-width:700px){.nightlight-garden{padding:64px 12px 22px}.nightlight-welcome h2{font-size:clamp(1.45rem,7vw,2rem)}.nightlight-central-stage{top:56%;width:min(84vw,360px);height:min(74vw,340px)}.nightlight-mini-lantern{--lantern-size:36px!important}}
+@media(max-width:700px){.nightlight-garden-bg img{object-fit:cover;object-position:center 52%}}
 @media(prefers-reduced-motion:reduce){.nightlight-garden.lantern-lit .nightlight-mini-lantern,.nightlight-mini-lantern,.nightlight-firefly,.nightlight-garden.lantern-lit .nightlight-lantern-halo,.nightlight-lantern-sparkles,.nightlight-particles i,.nightlight-hidden-star.revealed,.nightlight-constellation path,.nightlight-dream-message{animation:none!important}.nightlight-welcome{transition:none}.nightlight-garden.lantern-lit .nightlight-mini-lantern{translate:0 -24px}.workshop-showcase:has(.nightlight-garden){animation:none!important}}
 
 /* Dream Delivery storybook route game */
@@ -1586,3 +1588,61 @@ body:has(.magic-cabinet){overflow:hidden}
 .cabinet-global-sound { position: fixed; z-index: 1301; top: 16px; right: 18px; min-height: 40px; padding: 8px 13px; border: 1px solid #f2dfb477; border-radius: 999px; background: #11172de8; color: #fff2dc; font: 600 .75rem Fraunces, Georgia, serif; cursor: pointer; }
 .cabinet-global-sound:focus-visible { outline: 3px solid #fff0bc; outline-offset: 3px; }
 @media (max-width: 700px) { .cabinet-global-sound { top: 62px; right: 14px; min-height: 38px; padding: 7px 10px; font-size: .68rem; } }
+
+/* Cohesive daytime palette. These overrides are Day-only; Night defaults are untouched. */
+.observatory.day { color: #40364f; background-color: #fff9f0; background-image: linear-gradient(180deg,#fff9f0d9,#f0eafbba),url('/images/midnight-sky.png'); }
+.observatory.day .navbar { border-color: #e5dded; background: linear-gradient(#fff9f0f2,#fff9f0cc 70%,transparent); }
+.observatory.day .nav-links a, .observatory.day .text-link, .observatory.day .footer a { color: #625d70; }
+.observatory.day .nav-controls button, .observatory.day .menu-toggle { color: #40364f; border-color: #e5dded; background: #fff9f0e8; }
+.observatory.day .nav-controls button:hover { background: #f0eafb; }
+.observatory.day .hero { color: #40364f; background: radial-gradient(ellipse at 72% 52%,#e8b7cb66,transparent 36%),radial-gradient(ellipse at 18% 72%,#e7f1fc,transparent 44%),linear-gradient(155deg,#fff9f0,#fff2e4 58%,#f0eafb); }
+.observatory.day .hero h1, .observatory.day .section h2, .observatory.day .about h2 { color: #40364f; }
+.observatory.day .hero h1 em, .observatory.day .section h2 em, .observatory.day .project h3 em { color: #995b77; }
+.observatory.day .hero .eyebrow, .observatory.day .section-kicker, .observatory.day .project .eyebrow, .observatory.day .story-scene .eyebrow { color: #84694f; }
+.observatory.day .hero-description, .observatory.day .hero-note, .observatory.day .about p, .observatory.day .about .profile-caption { color: #625d70; }
+.observatory.day .hero-actions .primary-button, .observatory.day .project-button { color: #40364f; border-color: #d8cce8; background: #f0eafb; }
+.observatory.day .mood-switch, .observatory.day .mood-switch button { color: #625d70; }
+.observatory.day .mood-switch>span { color: #84694f; }
+.observatory.day .mood-switch button { border-color: #e5dded; background: #fff9f0; }
+.observatory.day .mood-switch button[aria-pressed=true] { color: #40364f; border-color: #b7a5e8; background: #f0eafb; }
+.observatory.day .about { color: #40364f; background: linear-gradient(180deg,#fff9f0,#fff2e4); }
+.observatory.day .about::before { color: #76639612; }
+.observatory.day .story { color: #40364f; background: radial-gradient(ellipse at 50% 100%,#f8e4ed,transparent 57%),linear-gradient(#fff9f0,#f0eafb); }
+.observatory.day .story-scene h3, .observatory.day .story-scene>div:last-child>p:last-child, .observatory.day .mission-instructions, .observatory.day .story-star-memory { color: #40364f; }
+.observatory.day .story-scene .eyebrow, .observatory.day .story-star-counter { color: #625d70; }
+.observatory.day .workshop-room { color: #40364f; }
+.observatory.day .workshop-room-shade { background: linear-gradient(180deg,#fff9f0d9 0%,#f0eafbb8 45%,#e7f1fcab 100%); }
+.observatory.day .workshop-heading { text-shadow: 0 2px 14px #fff9f088; }
+.observatory.day .workshop-heading .eyebrow, .observatory.day .workshop-heading h2, .observatory.day .workshop-heading>p:last-child { color: #40364f; }
+.observatory.day .workshop-heading h2 em { color: #995b77; }
+.observatory.day .hanging-bulb { color: #40364f; }
+.observatory.day .bulb-caption { color: #40364f; text-shadow: 0 1px 5px #fff9f0,0 0 12px #fff9f0; }
+.observatory.day .workshop-showcase { background-image: linear-gradient(#fff9f0d9,#f0eafbe8),url('/images/dream-workshop-bg.png'); }
+.observatory.day .showcase-topline h2, .observatory.day .showcase-project h3, .observatory.day .showcase-description, .observatory.day .showcase-project>p:not(.eyebrow) { color: #40364f; text-shadow: none; }
+.observatory.day .showcase-topline .eyebrow, .observatory.day .showcase-project>.eyebrow { color: #84694f; }
+.observatory.day .showcase-topline h2 em, .observatory.day .showcase-project h3 em { color: #995b77; }
+.observatory.day .showcase-project { border-color: #e5dded; background: #fff9f0e8; box-shadow: 0 18px 50px #66537d1c; }
+.observatory.day .back-workshop { color: #40364f; border-color: #d8cce8; background: #f0eafb; }
+.observatory.day .dream-message, .observatory.day .dream-message p, .observatory.day .map-label { color: #625d70; }
+.observatory.day .dream-message>span { color: #84694f; }
+.observatory.day .map-star { color: #766396; }
+.observatory.day .map-star small { color: #40364f; text-shadow: 0 1px 4px #fff9f0; }
+.observatory.day .route-base, .observatory.day .route-dash { stroke: #9a7dba; filter: drop-shadow(0 0 5px #b7a5e8); }
+.observatory.day .nightlight-garden { color: #40364f; }
+.observatory.day .nightlight-garden-bg { background: #e7f1fc; }
+.observatory.day .nightlight-garden-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg,#fff9f033,#fff2e477 72%,#e7f1fcaa); }
+.observatory.day .nightlight-welcome .eyebrow, .observatory.day .nightlight-welcome h2 { color: #40364f; text-shadow: 0 1px 10px #fff9f0; }
+.observatory.day .nightlight-welcome>p:last-child, .observatory.day .nightlight-secret-note, .observatory.day .nightlight-secret-note p { color: #625d70; text-shadow: 0 1px 8px #fff9f0; }
+.observatory.day .nightlight-star-counter { color: #40364f; border-color: #e5dded; background: #fff9f0e8; }
+.observatory.day .nightlight-star-counter small { color: #625d70; }
+.observatory.day .lullaby-fairytale { color: #40364f; background-image: linear-gradient(180deg,#fff9f055,#f0eafb88),url('/images/lullaby_bg.png'); }
+.observatory.day .lullaby-welcome .eyebrow, .observatory.day .lullaby-welcome h2 { color: #40364f; text-shadow: 0 1px 9px #fff9f0; }
+.observatory.day .lullaby-welcome>p:last-child, .observatory.day .lullaby-secret-note, .observatory.day .lullaby-secret-note p { color: #625d70; text-shadow: 0 1px 8px #fff9f0; }
+.observatory.day .lullaby-star-counter { color: #40364f; border-color: #e5dded; background: #fff9f0e8; }
+.observatory.day .lullaby-star-counter small { color: #625d70; }
+.observatory.day .footer { color: #40364f; background: linear-gradient(180deg,#f0eafb,#fff9f0); }
+.observatory.day .footer h2, .observatory.day .footer>p:not(.eyebrow) { color: #40364f; }
+.observatory.day .magic-cabinet:not(.cabinet-day) { color: #40364f; background: linear-gradient(145deg,#fff9f0ee,#f0eafbe8 53%,#f8e4ede8),url('/images/magic_cabinet_bg.png') center/cover no-repeat; }
+.observatory.day .magic-cabinet:not(.cabinet-day) .cabinet-panel, .observatory.day .magic-cabinet:not(.cabinet-day) .cabinet-secret-card { color: #40364f; background: linear-gradient(145deg,#fff9f0f5,#f0eafbfa); }
+.observatory.day .magic-cabinet:not(.cabinet-day) .cabinet-panel>p:not(.cabinet-eyebrow), .observatory.day .magic-cabinet:not(.cabinet-day) .cabinet-wish { color: #625d70; }
+.observatory.day .magic-cabinet:not(.cabinet-day) .cabinet-panel h2, .observatory.day .magic-cabinet:not(.cabinet-day) .cabinet-secret-card h2 { color: #40364f; }

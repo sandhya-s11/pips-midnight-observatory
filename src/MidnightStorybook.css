@@ -177,3 +177,21 @@
 @media (prefers-reduced-motion: reduce) {
   .storybook-turn-leaf { animation-duration: .01ms !important; }
 }
+
+/* Day-mode surroundings; the cream paper pages remain as originally illustrated. */
+.observatory.day .midnight-storybook { color: #40364f; background-color: #e7f1fc; background-image: linear-gradient(180deg,#fff9f055,#f0eafb99 62%,#fff2e4cc),url('/images/storytime_bg.png'); }
+.observatory.day .storybook-heading .eyebrow { color: #84694f; }
+.observatory.day .storybook-heading h2, .observatory.day .storybook-heading h2 em { color: #40364f; text-shadow: 0 2px 12px #fff9f099; }
+.observatory.day .storybook-heading>p:last-child, .observatory.day .storybook-swipe-hint { color: #625d70; }
+.observatory.day .storybook-book { border-color: #d6c9e2; background: linear-gradient(135deg,#8f789c,#6c5b7c 48%,#9c8298); box-shadow: 0 24px 60px #493c5c30,inset 0 0 0 5px #fff9f044,inset 0 0 30px #fff9f044; }
+.observatory.day .storybook-book::before { border-color: #fff9f066; }
+.observatory.day .storybook-binding { background: linear-gradient(90deg,#65536f,#b9a4bd 38%,#806b8c 54%,#594666); }
+.observatory.day .storybook-button { color: #40364f; border-color: #d8cce8; background: linear-gradient(135deg,#f8e4ed,#f0eafb); box-shadow: 0 4px 12px #493c5c22; }
+.observatory.day .storybook-button:focus-visible, .observatory.day .storybook-audio-controls button:focus-visible { outline-color: #766396; }
+.observatory.day .storybook-progress { color: #40364f; }
+.observatory.day .storybook-progress-dots span { background: #76639655; }
+.observatory.day .storybook-progress-dots span.is-read { background: #766396; box-shadow: 0 0 7px #b7a5e8; }
+.observatory.day .storybook-audio-controls { color: #625d70; }
+.observatory.day .storybook-audio-controls button { color: #40364f; border-color: #d8cce8; background: #fff9f0e8; }
+.observatory.day .storybook-audio-controls button span { color: #84694f; }
+.observatory.day .storybook-surprise { color: #40364f; border-color: #e5dded; background: #fff9f0e8; }
