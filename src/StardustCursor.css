@@ -1,0 +1,6 @@
+.stardust-cursor { position: fixed; z-index: 1000; inset: 0; overflow: hidden; pointer-events: none; }
+.stardust-particle { position: absolute; width: 7px; height: 7px; border-radius: 50% 50% 50% 0; animation: stardust-fade .62s ease-out forwards; box-shadow: 0 0 8px currentColor; }
+.stardust-particle.gold { color: #ffe29a; background: currentColor; }
+.stardust-particle.lilac { width: 5px; height: 5px; color: #d7c1ff; background: currentColor; animation-delay: .04s; }
+@keyframes stardust-fade { 0% { opacity: .9; transform: translate(-50%, -50%) rotate(-45deg) scale(.8); } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(45deg) scale(.1); } }
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) { .stardust-cursor { display: none; } }
